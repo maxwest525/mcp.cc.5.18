@@ -1,0 +1,355 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle2, AlertCircle, Settings, Zap, BarChart3, Lock, Activity } from 'lucide-react';
+
+interface Connection {
+  id: string;
+  name: string;
+  type: string;
+  status: 'connected' | 'disconnected' | 'error';
+  lastSync?: string;
+  config: Record<string, string>;
+}
+
+interface Workflow {
+  id: string;
+  name: string;
+  trigger: string;
+  actions: string[];
+  status: 'active' | 'paused';
+  lastRun?: string;
+}
+
+export function AdminHyperMCP() {
+  const [connections, setConnections] = useState<Connection[]>([
+    {
+      id: 'claude',
+      name: 'Claude (Hyper)',
+      type: 'ai_agent',
+      status: 'connected',
+      lastSync: new Date().toISOString(),
+      config: { model: 'claude-opus-4-7', role: 'HyperMCP Orchestrator' }
+    },
+    {
+      id: 'gemini',
+      name: 'Gemini',
+      type: 'ai_vision',
+      status: 'connected',
+      lastSync: new Date().toISOString(),
+      config: { model: 'gemini-2.5-pro-preview-05-06' }
+    },
+    {
+      id: 'authorize-net',
+      name: 'Authorize.net',
+      type: 'payment_gateway',
+      status: 'connected',
+      lastSync: new Date().toISOString(),
+      config: { 
+        merchant_id: '••••••••',
+        api_login_id: '••••••••',
+        transaction_key: '••••••••'
+      }
+    },
+    {
+      id: 'granot',
+      name: 'Granot (Supreme)',
+      type: 'tariff_carrier',
+      status: 'disconnected',
+      config: { api_endpoint: '', subscription: 'supreme' }
+    },
+    {
+      id: 'fmcsa',
+      name: 'FMCSA Safety',
+      type: 'regulatory',
+      status: 'connected',
+      lastSync: new Date().toISOString(),
+      config: { api: 'public_safety_data' }
+    },
+    {
+      id: 'stripe',
+      name: 'Payment Variable',
+      type: 'payment_gateway',
+      status: 'disconnected',
+      config: { type: 'escrow_variable', provider: 'authorize_net' }
+    },
+    {
+      id: 'supabase',
+      name: 'Supabase',
+      type: 'database',
+      status: 'connected',
+      config: { project: 'trumove', tables: 'hub_schema' }
+    },
+    {
+      id: 'lovable',
+      name: 'Lovable',
+      type: 'deployment_platform',
+      status: 'connected',
+      config: { project: '128b488c-44b4-491c-81db-13ee1d434085', github_connected: 'true' }
+    }
+  ]);
+
+  const [workflows, setWorkflows] = useState<Workflow[]>([
+    {
+      id: 'intake_router',
+      name: 'Intake Router',
+      trigger: 'customer_form_submitted',
+      actions: ['validate_address', 'enrich_lead', 'estimate_pricing'],
+      status: 'active',
+      lastRun: new Date().toISOString()
+    },
+    {
+      id: 'pricing_engine',
+      name: 'Pricing Engine',
+      trigger: 'inventory_detected',
+      actions: ['calculate_cf', 'lookup_tariff', 'generate_quote'],
+      status: 'active'
+    },
+    {
+      id: 'carrier_dispatch',
+      name: 'Carrier Dispatch',
+      trigger: 'move_booked',
+      actions: ['match_carrier', 'verify_fmcsa', 'send_offer'],
+      status: 'active'
+    },
+    {
+      id: 'compliance_automation',
+      name: 'Compliance Automation',
+      trigger: 'quote_generated',
+      actions: ['generate_work_file', 'create_audit_trail', 'archive_records'],
+      status: 'active'
+    },
+    {
+      id: 'customer_comms',
+      name: 'Customer Communications',
+      trigger: 'move_stage_change',
+      actions: ['send_voice_reminder', 'sms_dispatch', 'email_notification'],
+      status: 'active'
+    }
+  ]);
+
+  const [logs, setLogs] = useState<any[]>([
+    {
+      timestamp: new Date().toISOString(),
+      level: 'success',
+      message: 'HyperMCP initialized successfully',
+      workflow: 'system'
+    },
+    {
+      timestamp: new Date(Date.now() - 60000).toISOString(),
+      level: 'info',
+      message: 'Authorize.net connection verified',
+      workflow: 'payment_gateway'
+    }
+  ]);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'connected':
+        return <Badge className="bg-green-500 hover:bg-green-600"><CheckCircle2 className="w-3 h-3 mr-1" /> Connected</Badge>;
+      case 'disconnected':
+        return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" /> Disconnected</Badge>;
+      case 'error':
+        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" /> Error</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">HyperMCP Orchestration Hub</h1>
+        <p className="text-gray-600">Central control plane for multi-channel orchestration</p>
+      </div>
+
+      <Alert className="bg-blue-50 border-blue-200">
+        <Zap className="h-4 w-4" />
+        <AlertDescription>
+          All integrations are wired through HyperMCP. Authorize.net integration active. Variables are configurable for future merchant gateways.
+        </AlertDescription>
+      </Alert>
+
+      <Tabs defaultValue="connections" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="connections">
+            <Lock className="w-4 h-4 mr-2" />
+            Connections
+          </TabsTrigger>
+          <TabsTrigger value="workflows">
+            <Activity className="w-4 h-4 mr-2" />
+            Workflows
+          </TabsTrigger>
+          <TabsTrigger value="routing">
+            <Zap className="w-4 h-4 mr-2" />
+            Routing Rules
+          </TabsTrigger>
+          <TabsTrigger value="logs">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Logs
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings className="w-4 h-4 mr-2" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
+
+        {/* CONNECTIONS TAB */}
+        <TabsContent value="connections" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Connections</CardTitle>
+              <CardDescription>Manage all integrations and API credentials</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4">
+                {connections.map((conn) => (
+                  <div key={conn.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div className="space-y-1">
+                      <p className="font-semibold">{conn.name}</p>
+                      <p className="text-sm text-gray-600">{conn.type}</p>
+                      {conn.lastSync && (
+                        <p className="text-xs text-gray-500">Last sync: {new Date(conn.lastSync).toLocaleTimeString()}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {getStatusBadge(conn.status)}
+                      <Button variant="outline" size="sm">Configure</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* WORKFLOWS TAB */}
+        <TabsContent value="workflows" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Workflows</CardTitle>
+              <CardDescription>Automated processes connecting all channels</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4">
+                {workflows.map((wf) => (
+                  <div key={wf.id} className="p-4 border rounded-lg space-y-2 hover:bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">{wf.name}</p>
+                      <Badge variant={wf.status === 'active' ? 'default' : 'secondary'}>
+                        {wf.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600">Trigger: <code className="bg-gray-100 px-2 py-1 rounded">{wf.trigger}</code></p>
+                    <div className="text-sm">
+                      <p className="text-gray-600 mb-1">Actions:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {wf.actions.map((action, i) => (
+                          <Badge key={i} variant="outline">{action}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ROUTING RULES TAB */}
+        <TabsContent value="routing" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Routing Rules</CardTitle>
+              <CardDescription>Define how customer data flows through channels</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg space-y-2">
+                  <p className="font-semibold">Lead → Pricing Engine</p>
+                  <p className="text-sm text-gray-600">When inventory detected, route to Gemini for cube calculation, then pricing engine for quote</p>
+                  <Badge>Active</Badge>
+                </div>
+                <div className="p-4 border rounded-lg space-y-2">
+                  <p className="font-semibold">Quote → Carrier Marketplace</p>
+                  <p className="text-sm text-gray-600">After quote generated, match to best carrier via Granot + FMCSA safety data</p>
+                  <Badge>Active</Badge>
+                </div>
+                <div className="p-4 border rounded-lg space-y-2">
+                  <p className="font-semibold">Booking → Payment & Compliance</p>
+                  <p className="text-sm text-gray-600">When move booked, generate work file bundle and hold payment in Authorize.net escrow</p>
+                  <Badge>Active</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* LOGS TAB */}
+        <TabsContent value="logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Logs</CardTitle>
+              <CardDescription>Real-time activity and audit trail</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {logs.map((log, i) => (
+                  <div key={i} className="p-3 border-l-4 bg-gray-50 text-sm font-mono"
+                    style={{
+                      borderColor: log.level === 'success' ? '#22c55e' : log.level === 'error' ? '#ef4444' : '#3b82f6'
+                    }}>
+                    <p className="text-gray-600">{new Date(log.timestamp).toLocaleTimeString()} | {log.workflow}</p>
+                    <p className="text-gray-900">{log.message}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* SETTINGS TAB */}
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuration</CardTitle>
+              <CardDescription>HyperMCP settings and environment variables</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Payment Gateway</label>
+                  <select className="w-full p-2 border rounded">
+                    <option>Authorize.net (Active)</option>
+                    <option>Stripe (Variable)</option>
+                    <option>Custom Gateway</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Tariff Provider</label>
+                  <select className="w-full p-2 border rounded">
+                    <option>Granot Supreme (Pending API)</option>
+                    <option>Custom Tariff</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Primary AI Model</label>
+                  <select className="w-full p-2 border rounded">
+                    <option>Claude Opus 4.7 (Active)</option>
+                    <option>Gemini 2.5 Pro</option>
+                  </select>
+                </div>
+                <Button className="w-full">Save Configuration</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+export default AdminHyperMCP;

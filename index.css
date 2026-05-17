@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MCP Command Center — enterprise dark operational palette. All colors HSL. */
+
+@layer base {
+  :root {
+    --background: 210 25% 98%;
+    --foreground: 222 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 30% 12%;
+
+    /* Operational emerald */
+    --primary: 158 72% 38%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 158 60% 92%;
+    --primary-bar: 158 72% 38%;
+
+    --secondary: 220 16% 94%;
+    --secondary-foreground: 222 30% 18%;
+
+    --muted: 220 16% 95%;
+    --muted-foreground: 220 10% 42%;
+
+    --accent: 158 60% 92%;
+    --accent-foreground: 158 72% 24%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 48%;
+    --warning-foreground: 30 80% 12%;
+
+    --success: 158 72% 38%;
+    --success-foreground: 0 0% 100%;
+
+    --info: 215 85% 48%;
+
+    --border: 220 16% 88%;
+    --input: 220 16% 88%;
+    --ring: 158 72% 38%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 210 25% 96%;
+    --sidebar-foreground: 222 20% 30%;
+    --sidebar-primary: 158 72% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 16% 92%;
+    --sidebar-accent-foreground: 222 30% 12%;
+    --sidebar-border: 220 16% 88%;
+    --sidebar-ring: 158 72% 38%;
+
+    --shadow-card: 0 1px 2px 0 hsl(222 30% 12% / 0.06);
+    --shadow-elevated: 0 8px 24px -8px hsl(222 30% 12% / 0.12);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body, #root {
+    @apply bg-background text-foreground;
+    min-height: 100vh;
+  }
+
+  body {
+    font-feature-settings: "cv11", "ss01";
+  }
+}
